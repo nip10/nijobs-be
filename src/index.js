@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const session = require("express-session");
 const bodyParser = require("body-parser");
+const { csrfErrorHandler } = require("./csrf_controller");
 
 const PORT = process.env.PORT || 4000;
 
@@ -83,7 +84,8 @@ app.use("/api/example", example);
 const account = require("./routes/auth");
 app.use("/api/auth", account);
 
-
+// CSRF Error handler
+app.use(csrfErrorHandler);
 
 const server = app.listen(PORT);
 if (process.env.NODE_ENV === "test") {

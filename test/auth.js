@@ -98,10 +98,12 @@ describe("Using already resgistered user", () => {
         return this.agent.post("/api/auth/login")
             .send(this.user)
             .then(async res => {
+                this.csrf = res.body._csrf;
                 res.should.have.cookie("connect.sid");
                 res.should.have.status(200);
                 res.body.should.be.an("object");
                 res.body.should.have.property("success").equal(true);
+                res.body.should.have.property("_csrf").that.is.a("string");
             });
     });
 
@@ -116,9 +118,20 @@ describe("Using already resgistered user", () => {
             });
     });
 
-    it("Log out with registered account", async () => {        
+    it("Log out should fail due to wrong csrf", async () => {
         return this.agent.delete("/api/auth/login")
             .send()
+            .then(async res => {
+                res.should.have.status(403);
+                res.body.should.be.an("object");
+                res.body.should.have.property("success").equal(false);
+                res.body.should.have.property("reason").that.is.a("string");
+            });
+    });
+
+    it("Log out with registered account", async () => {        
+        return this.agent.delete("/api/auth/login")
+            .send({"_csrf": this.csrf})
             .then(async res => {
                 res.should.have.status(200);
                 res.body.should.be.an("object");

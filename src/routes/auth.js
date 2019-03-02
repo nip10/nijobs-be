@@ -5,6 +5,7 @@ const passport = require("passport");
 const ERROR_TYPES = require("./errors/errorHandler");
 const Account = require("../models/Account");
 const authRequired = require("../auth_controller");
+const {csrfRequired, csrfSetter} = require("../csrf_controller");
 
 // Get logged in user
 router.get("/login", authRequired, (req, res) => {
@@ -13,24 +14,25 @@ router.get("/login", authRequired, (req, res) => {
         "success": true,
         "data": {
             "_id": userInfo._id,
-            "username": userInfo.username
+            "username": userInfo.username,
         }
     });
 });
 
 // Login endpoint
-router.post("/login", passport.authenticate("local"), (req, res) => {
+router.post("/login", passport.authenticate("local"), csrfSetter, (req, res) => {
     return res.status(200).json({
         "success": true,
+        "_csrf": req.csrfToken()
     });
 });
 
 
 // Logout endpoint
-router.delete("/login", authRequired, (req, res) => {
+router.delete("/login", authRequired, csrfRequired, (req, res) => {
     req.logout();
     return res.status(200).json({
-        "success": true,
+        "success": true
     });
 });
 
